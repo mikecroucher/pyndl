@@ -16,6 +16,7 @@ import itertools
 import multiprocessing
 import os
 import sys
+import time
 
 
 def _job_cues_outcomes(event_file_name, start, step, verbose=False):
@@ -31,6 +32,15 @@ def _job_cues_outcomes(event_file_name, start, step, verbose=False):
     cues = Counter()
     outcomes = Counter()
     nn = -1  # in case the for loop never gets called and 1 gets added in the end
+    num_lines = 0 # How many lines does this process have to work through 
+
+    if verbose:
+       with gzip.open(event_file_name, 'rt') as dfile:
+           for nn, line in enumerate(itertools.islice(dfile, start, None, step)):
+               num_lines +=1
+       print('Each process has {0} lines to process'.format(num_lines))
+
+    start_time = time.clock()
     with gzip.open(event_file_name, 'rt') as dfile:
         # skip header
         dfile.readline()
@@ -41,8 +51,11 @@ def _job_cues_outcomes(event_file_name, start, step, verbose=False):
             for outcome in outcomes_line.strip().split('_'):
                 outcomes[outcome] += 1
             if verbose and nn % 100000 == 0:
-                print('.', end='')
+                print(nn/num_lines*100)
                 sys.stdout.flush()
+    end_time = time.clock()
+    if verbose:
+        print('_jobs_cues_outcomes() time: {0} '.format(end_time - start_time))
     return (nn + 1, cues, outcomes)
 
 
