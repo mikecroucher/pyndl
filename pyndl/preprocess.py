@@ -806,7 +806,6 @@ def create_binary_event_files(event_file,
                     if result.ready():
                         break
                     time.sleep(1.0)  # check every second
-                    if verbose:
         # wait until all jobs are done
         pool.close()
         pool.join()
